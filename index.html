@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SYDE671 Assignment 2</title>
+
+<style>
+body { font-family: Arial, sans-serif; margin: 20px auto; padding: 0 20px; max-width: 1100px; line-height: 1.55; color: #222; }
+h1 { border-bottom: 2px solid #ddd; padding-bottom: 8px; text-align: center; }
+h2 { margin-top: 2.2em; border-bottom: 1px solid #ddd; padding-bottom: 4px; text-align: center; }
+h3 { margin-top: 1.6em; }
+h4 { margin-top: 1.3em; }
+h3, h4, p, ol, ul { max-width: 850px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+ol, ul { padding-left: 2em; }
+figure { margin: 0; text-align: center; }
+figcaption { font-size: 0.9em; color: #555; margin-top: 6px; }
+img { max-width: 100%; height: auto; }
+.center-image { display: block; margin: 0 auto; }
+.image-container { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; align-items: flex-start; margin: 1.2em 0; }
+.image-container figure { flex: 0 1 500px; }
+.image-container.small figure { flex-basis: 320px; }
+.single { margin: 1.2em auto; max-width: 500px; }
+.image-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 1.2em 0; }
+table { border-collapse: collapse; margin: 1em auto; font-size: 0.95em; }
+th, td { border: 1px solid #ccc; padding: 6px 12px; text-align: center; }
+th { background: #f3f3f3; }
+@media (max-width: 700px) { .image-grid { grid-template-columns: 1fr; } }
+</style>
+
+
+</head>
+<body>
+<h1>Welcome to My SYDE671 Portfolio!</h1>
+
+<!-- ================= PART ONE ================= -->
+<h2>Part One: Fun with Filters</h2>
+
+<h3>1.1 Convolution from Scratch</h3>
+
+<p>Images are represented by matrices of pixel values, and image filters can be represented as smaller matrices.
+    To apply the filter, we can slide the filter kernel over every pixel, multiply th weights, and sum the outcome into
+    one output pixel. This is called convolution, and it is a fundamental operation in image processing and computer vision.
+</p>
+
+<p>Here, I've started with building my own convolution function in Python. Using four loops will go over every image pixel and every
+    kernel entry. Two loops will go over the image pixels, and two loops will go over the image pixels and use NumPy to do the multiplication
+    and summing. They will give the same output, but the second one will be faster. I've attached the code and the outputs of these operations
+    below.
+</p>
+
+<pre>
+<code>
+def convolve2d_four_loops(image: np.ndarray, kernel: np.ndarray) -> np.ndarray:
+    """Convolution with four explicit for loops (image rows/cols, kernel rows/cols)."""
+    image = np.asarray(image, dtype=np.float64)
+    kernel = np.asarray(kernel, dtype=np.float64)
+    h, w = image.shape
+    kh, kw = kernel.shape
+
+    padded = pad_zeros(image, kernel.shape)
+    flipped = kernel[::-1, ::-1]  # flip both axes: true convolution
+
+    output = np.zeros((h, w), dtype=np.float64)
+    for r in range(h):
+        for c in range(w):
+            total = 0.0
+            for i in range(kh):
+                for j in range(kw):
+                    total += padded[r + i, c + j] * flipped[i, j]
+            output[r, c] = total
+    return output
+
+def convolve2d_two_loops(image: np.ndarray, kernel: np.ndarray) -> np.ndarray:
+    """Convolution with two explicit for loops; the kernel sum is done with NumPy."""
+    image = np.asarray(image, dtype=np.float64)
+    kernel = np.asarray(kernel, dtype=np.float64)
+    h, w = image.shape
+    kh, kw = kernel.shape
+
+    padded = pad_zeros(image, kernel.shape)
+    flipped = kernel[::-1, ::-1]
+
+    output = np.zeros((h, w), dtype=np.float64)
+    for r in range(h):
+        for c in range(w):
+            output[r, c] = np.sum(padded[r:r + kh, c:c + kw] * flipped)
+    return output
+</code>
+</pre>
+
+<div class="image-container">
+  <figure>
+    <img src="Assignment_Images\Janet-fourloops.png" alt="Image of myself convolved with a 9x9 blurring filter using four loops" class="center-image">
+    <figcaption>Image of myself convolved with a 9x9 blurring filter using four loops.</figcaption>
+  </figure>
+  <figure>
+    <img src="Assignment_Images\Janet-twoloops.png" alt="Image of myself convolved with a 9x9 blurring filter using two loops" class="center-image">
+    <figcaption>Image of myself convolved with a 9x9 blurring filter using two loops.</figcaption>
+  </figure>
+</div>
+
+
+<h3>1.2 Finite Difference Operators</h3>
+
+<p> Mathematically, a derivative will calculate how fast something is changing, so an image derivative will highlight regions 
+    of rapid intensity change, which are edges. In two dimensions, we can take derivatives in x and in y, giving us Ix and Iy.
+    However, we know conceptually that edges are not necessarily exclusively present in a single direction, so there is value in acquiring
+    the gradient magnitude, which will tell us how strong edges are regardless of direction. 
+</p>
+
+<p> We can have a python script calculate these gradients, then threshold them so that magnitide of a certain strength can be classified as an edge.
+    This threshold is going to be image depedent, a threshold too low will hold noise, while too high will delete the true edges. Using this cameraman
+    image, I have calculated the gradients and applied different thresholds to see how the edges are affected. The results are shown below. The left image is
+    showing the gradient magnitude map of the cameraman image thresholded at various levels. The right images is me having selected 0.3 as the best thresholding
+    level, and showing the original image, the x and y derivatives, the gradient magnitude, and the thresholded edges.
+</p>
+
+<div class="image-container">
+  <figure>
+    <img src="Assignment_Images\differentthresholds.png" alt="Different thresholds of cameraman after gradient calculation" class="center-image">
+    <figcaption>Different thresholds of cameraman after gradient calculation.</figcaption>
+  </figure>
+  <figure>
+    <img src="Assignment_Images\gradients0.3.png" alt="Original cameraman image with derivatives, gradient magnitide, and 0.3 threshold" class="center-image">
+    <figcaption>Original cameraman image with derivatives, gradient magnitude, and 0.3 threshold.</figcaption>
+  </figure>
+</div>
+
+<h3>1.3 Derivative of Gaussian (DoG) Filter</h3>
+
+<p> If you squint a little at the 0.3 threshold image, you might have noticed that there is still some noise that is captured in the manitude gradient thresholdng.
+    A way to tackle this problem is to smooth the image before calculating the gradients. A common way to do this is to use a Gaussian filter, which will blur the image.
+</p>
+
+<p> In this case, we used a Gaussian filter compared to the box filter from Part 1.1. It's kind of hard to compare a photo of me to the cameraman, so I've displayed the 
+    original image, the box filter, and the Gaussian filter below. We can see that the box filter provides a more uniform blur while the Gaussian does a better job a preserving
+    the original features. This is because the Gaussian filter takes a weighted sum of the pixels nearby based on their distance from the pixel in question, so edges (which will likely
+    span multiple pixels) will be preserved better than noise, which might be only affect a single pixel at a time.
+</p>
+
+<figure class="single">
+  <img src="Assignment_Images\boxgaussiancomparison.png" alt="Box and Gaussian filter comparison" height="500" class="center-image">
+  <figcaption>Box and Gaussian filter comparison.</figcaption>
+</figure>
+
+<figure class="single">
+  <img src="Assignment_Images\gradientcomparison.png" alt="Gradient map not using and using the Gaussian filter" height="500" class="center-image">
+  <figcaption>Gradient map not using and using the Gaussian filter</figcaption>
+</figure>
+
+<figure class="single">
+  <img src="Assignment_Images\thresholdcomparison.png" alt="Gradient thresholding not using and using the Gaussian filter" height="500" class="center-image">
+  <figcaption>Gradient thresholding not using and using the Gaussian filter</figcaption>
+</figure>
+
+<p> We can see that because the Gaussian helps us reduce some of the noise at an earlier stage, we can use a lower threshold from the gradient map, while before
+    we had to use a higher threshold to avoid capturing noise. Now, we can see the horizon line in the cameraman image clearly compared to before.
+</p>
+
+<p></p>
+
+<h3>Bells & Whistles</h3>
+
