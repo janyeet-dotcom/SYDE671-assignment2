@@ -6,6 +6,10 @@
             = I * ((1 + alpha) * delta - alpha * G)    <- one convolution
 
 Usage:  python part2_1.py IMAGE [--sigma S]
+
+Sigma is measured in pixels, so what looks like a "blur" depends on image size.
+If --sigma is not given it is set to (longest side) / 150, which gives sigma = 2
+for a 300 px image and about 17 for a 2500 px photo.
 """
 
 import argparse
@@ -13,7 +17,7 @@ import argparse
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.signal import convolve2d
+from scipy.signal import fftconvolve
 
 ALPHA = 1.5                           # sharpening amount for the main result
 ALPHAS = [0.5, 1, 2, 4, 8]            # amounts shown in the comparison
@@ -34,8 +38,14 @@ def unsharp_kernel(sigma, alpha):
 
 
 def convolve(img, kernel):
-    """Same-size convolution on each colour channel (mirrored borders)."""
-    channels = [convolve2d(img[..., c], kernel, mode="same", boundary="symm")
+    """Same-size convolution on each colour channel (mirrored borders).
+
+    Uses the FFT method so large kernels on large photos stay fast; the result
+    is the same convolution as convolve2d.
+    """
+    p = kernel.shape[0] // 2
+    padded = np.pad(img, ((p, p), (p, p), (0, 0)), mode="reflect")
+    channels = [fftconvolve(padded[..., c], kernel, mode="valid")
                 for c in range(img.shape[2])]
     return np.clip(np.dstack(channels), 0, 1)
 
@@ -49,13 +59,17 @@ def show(ax, img, title):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("image")
-    parser.add_argument("--sigma", type=float, default=2.0)
+    parser.add_argument("--sigma", type=float, default=None,
+                        help="blur width in pixels (default: longest side / 150)")
     args = parser.parse_args()
 
     bgr = cv2.imread(args.image)
     if bgr is None:
         raise FileNotFoundError(args.image)
     img = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB) / 255.0
+    if args.sigma is None:
+        args.sigma = round(max(img.shape[:2]) / 150, 1)
+    print(f"Image {img.shape[1]}x{img.shape[0]}, sigma = {args.sigma:g}")
     G = gaussian_kernel(args.sigma)
 
     # 1) Blurred, high frequencies, sharpened ------------------------------

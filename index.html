@@ -208,16 +208,32 @@ def convolve2d_two_loops(image: np.ndarray, kernel: np.ndarray) -> np.ndarray:
 </p>
 
 <figure class="single">
-  <img src="Assignment_Images\part2_1_evaluation_sigma1.png" alt="Gaussian blur then unsharp masking" height="900" class="center-image">
+  <img src="Assignment_Images\part2_1_process_sigma1.png" alt="Gaussian blur then unsharp masking" height="900" class="center-image">
   <figcaption>Gaussian blur then unsharp masking, <b>&alpha; = 1.5</b>, <b>sigma = 1.0</b></figcaption>
 </figure>
 
 <figure class="single">
-  <img src="Assignment_Images\part2_1_evaluation_sigma2.png" alt="Gaussian blur then unsharp masking" height="900" class="center-image">
+  <img src="Assignment_Images\part2_1_process_sigma2.png" alt="Gaussian blur then unsharp masking" height="900" class="center-image">
   <figcaption>Gaussian blur then unsharp masking, <b>&alpha; = 1.5</b>, <b>sigma = 2.0</b></figcaption>
 </figure>
 
 <p> We can see that <b>&sigma; = 2.0</b> more severely blurs the original image, so the unsharp masking does a worse job at recovering the lost information
-because more of the high-frequency details are lost in the blurring process.</p>
+because more of the high-frequency details are lost in the blurring process. I tried this Gaussian blur then unshar mask on two more images, the chicken and
+the puzzle pieces! Since the images were higher resolution, I needed to use a greater sigma value. The script auto-sets sigma to the pixel number divided by 150.
+</p>
+
+<figure class="single">
+  <img src="Assignment_Images\part2_1_process_chicken.png" alt="Gaussian blur then unsharp masking with a chicken" height="900" class="center-image">
+  <figcaption>Gaussian blur then unsharp masking with a chicken</b></figcaption>
+</figure>
+
+<figure class="single">
+  <img src="Assignment_Images\part2_1_process_puzzle.png" alt="Gaussian blur then unsharp masking with a puzzle" height="900" class="center-image">
+  <figcaption>Gaussian blur then unsharp masking with a puzzle</b></figcaption>
+</figure>
+
+
+
+
 
 
