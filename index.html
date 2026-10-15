@@ -187,3 +187,37 @@ def convolve2d_two_loops(image: np.ndarray, kernel: np.ndarray) -> np.ndarray:
 
 <h3>2.1 Image "Sharpening"</h3>
 
+<p> Since we know that edges tend to be higher frequency components in the image, we can artificially "sharpen" an image
+  by isolating the high frequency components and adding them back to the original image. This is called unsharp masking.
+  To be able to program this in an intuitive way, the sharpening effect can be expressed by this equation: <b>sharp = I + alpha * (I - I * G)</b>
+  G is the Gaussian, and we can control it's affect on the image by changing the <b>&sigma;</b>-value. <b>&alpha;</b> is a scaling factor we can use
+  to adjust the strength of the sharpening effect. I've shown the Taj Mahal image below with different <b>&sigma;</b> and <b>&alpha;</b> values to see 
+  how the sharpening effect is affected.
+</p>
+
+<figure class="single">
+  <img src="Assignment_Images\part2_1_alphas_sigma2.png" alt="Alpha values comparison, sigma = 2.0" height="900" class="center-image">
+  <figcaption>Alpha values comparison, sigma = 2.0</figcaption>
+</figure>
+
+<p> In the Taj Mahal image, the edges of interest would be the marble inlay, the arch details, scaffolding and tree outlines. These are removed with the
+  Gaussian blur, so we're seeing if they're added back with the unsharp mask. We can see that <b>&alpha; = 0</b> to <b>&alpha; = 1</b> gives us a subtle sharpening effect, 
+  while higher values of <b>&alpha;</b> result in a haloing effect, and even higher values can lead to over-sharpening and noise amplification. I selected <b>&alpha; = 1.5</b>
+  to be a good value to proceed, as we can see the finer details such as the dome texture and scaffolding are recovered without introducing too much noise or haloing.
+  Now, we can see how the <b>&sigma;</b> value affects the sharpening effect.
+</p>
+
+<figure class="single">
+  <img src="Assignment_Images\part2_1_evaluation_sigma1.png" alt="Gaussian blur then unsharp masking" height="900" class="center-image">
+  <figcaption>Gaussian blur then unsharp masking, <b>&alpha; = 1.5</b>, <b>sigma = 1.0</b></figcaption>
+</figure>
+
+<figure class="single">
+  <img src="Assignment_Images\part2_1_evaluation_sigma2.png" alt="Gaussian blur then unsharp masking" height="900" class="center-image">
+  <figcaption>Gaussian blur then unsharp masking, <b>&alpha; = 1.5</b>, <b>sigma = 2.0</b></figcaption>
+</figure>
+
+<p> We can see that <b>&sigma; = 2.0</b> more severely blurs the original image, so the unsharp masking does a worse job at recovering the lost information
+because more of the high-frequency details are lost in the blurring process.</p>
+
+
