@@ -158,7 +158,32 @@ def convolve2d_two_loops(image: np.ndarray, kernel: np.ndarray) -> np.ndarray:
     we had to use a higher threshold to avoid capturing noise. Now, we can see the horizon line in the cameraman image clearly compared to before.
 </p>
 
-<p></p>
+<p>Turns out we can try to simplify the process by combining the Gaussian filtering and the gradient calculation into a single convolution. Convolutions are associative,
+  so convolving the image with a Gaussian filter and then convolving the result with a derivative filter is equivalent to convolving the image with a single filter that 
+  is the convolution of the Gaussian and derivative filters. This is called a Derivative of Gaussian (DoG) filter, and it can be used to calculate gradients while also 
+  smoothing the image. We'll try to make sure this is the case! The results are shown below.
+</p>
+
+<figure class="single">
+  <img src="Assignment_Images\DoGconv.png" alt="DoG filter comparison to two-step process" height="500" class="center-image">
+  <figcaption>DoG filter comparison to two-step process</figcaption>
+</figure>
 
 <h3>Bells & Whistles</h3>
+
+<p> Another way to visualize the image gradients to add a colour map. For example, if we use HSV (Hue, Saturation, Value) space,
+   we can map the gradient magnitude to the value channel, the gradient direction to the hue channel, and keep the saturation constant.
+    Now at a glance, we can see in what "directions" the edges are oriented. For example, the edge between the background and the cameraman's
+  back is green, meaning that the gradient is oriented in the direction from his back to the background, and in the original image, this corresponds
+   to the edge of the cameraman's back being darker and the edge of the background being lighter.</p>
+
+<figure class="single">
+  <img src="Assignment_Images\HSVgradient.png" alt="HSV gradient visualization" height="500" class="center-image">
+  <figcaption>HSV gradient visualization</figcaption>
+</figure>
+
+
+<h2>Part Two: Fun with Frequencies</h2>
+
+<h3>2.1 Image "Sharpening"</h3>
 
