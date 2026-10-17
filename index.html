@@ -20,7 +20,7 @@ img { max-width: 100%; height: auto; }
 .image-container { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; align-items: flex-start; margin: 1.2em 0; }
 .image-container figure { flex: 0 1 500px; }
 .image-container.small figure { flex-basis: 320px; }
-.single { margin: 1.2em auto; max-width: 500px; }
+.single { margin: 1.2em auto; max-width: 900px; }
 .image-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 1.2em 0; }
 table { border-collapse: collapse; margin: 1em auto; font-size: 0.95em; }
 th, td { border: 1px solid #ccc; padding: 6px 12px; text-align: center; }
@@ -232,8 +232,54 @@ the puzzle pieces! Since the images were higher resolution, I needed to use a gr
   <figcaption>Gaussian blur then unsharp masking with a puzzle</b></figcaption>
 </figure>
 
+<h3>2.2 Hybrid Images</h3>
 
+<p>Creating hybrid images tests an interesting concept in which high frequencies dominate our perception only when we're close enough to see them. 
+  Otherwise, from afar, we only really see the low-frequency components. So, if we combine the high frequencies of one image with the low frequencies of 
+  another, we can create an image that looks different depending on the viewing distance.</p>
 
+<figure class="single">
+  <img src="Assignment_Images\hybrid-cat-dog.png" alt="Images of a cat and dog" height="900" class="center-image">
+  <figcaption>Images of a cat and dog</b></figcaption>
+</figure>
 
+<figure class="single">
+  <img src="Assignment_Images\hybrid-cat-dog-zoom.png" alt="Hybrid image of a cat and dog at different distances" height="900" class="center-image">
+  <figcaption>Hybrid image of a cat and dog at different distances</b></figcaption>
+</figure>
+
+<figure class="single">
+  <img src="Assignment_Images\hybrid-bird-plane.png" alt="Images of a bird and plane" height="900" class="center-image">
+  <figcaption>Images of a bird and plane</b></figcaption>
+</figure>
+
+<figure class="single">
+  <img src="Assignment_Images\hybrid-bird-plane-zoom.png" alt="Hybrid image of a bird and plane at different distances" height="900" class="center-image">
+  <figcaption>Hybrid image of a bird and plane at different distances</b></figcaption>
+</figure>
+
+<p> How we accomplish this is to low-pass filter one image and high-pass filter the other image. Then we average or sum the two images. In terms of the Gaussian filters
+  we will be using for the low-pass and high-pass filtering, we will have to make some choices in <b>&sigma;</b>. For Derek and Nutmeg, a <b>&sigma;<sub>low</sub></b> (the <b>&sigma;</b> 
+  for the low-pass filter) of 7.0 keeps details coarser, meaning that his features are preserved, but not his skin texture. A <b>&sigma;<sub>high</sub></b> (the <b>&sigma;</b> for the
+   high-pass filter) of 3.5 keep the details finer, which are the fur and whiskers. A larger <b>&sigma;<sub>low</sub></b> value will make Derek emerge at a shorter distance or a smaller 
+   <b>&sigma;<sub>high</sub></b> will allow us to have more cat as we zoom out.
+</p>
+
+<figure class="single">
+  <img src="Assignment_Images\hybrid-derek-nutmeg.png" alt="Aligned images of Derek and Nutmeg" height="900" class="center-image">
+  <figcaption>Aligned images of Derek and Nutmeg</b></figcaption>
+</figure>
+
+<figure class="single">
+  <img src="Assignment_Images\hybrid-derek-nutmeg-zoom-7.0-3.5.png" alt="Hybrid image of Derek and Nutmeg at different distances, <b>&sigma;<sub>low</sub></b> = 7.0, <b>&sigma;<sub>high</sub></b> = 3.5" height="900" class="center-image">
+  <figcaption>Hybrid image of Derek and Nutmeg at different distances, <b>&sigma;<sub>low</sub></b> = 7.0, <b>&sigma;<sub>high</sub></b> = 3.5</b></figcaption>
+</figure>
+
+<figure class="single">
+  <img src="Assignment_Images\hybrid-derek-nutmeg-zoom-10.0-1.5.png" alt="Hybrid image of Derek and Nutmeg at different distances, <b>&sigma;<sub>low</sub></b> = 10.0, <b>&sigma;<sub>high</sub></b> = 1.5" height="900" class="center-image">
+  <figcaption>Hybrid image of Derek and Nutmeg at different distances, <b>&sigma;<sub>low</sub></b> = 10.0, <b>&sigma;<sub>high</sub></b> = 1.5</b></figcaption>
+</figure>
+
+<p> For these cases, I also had to align the eyes</p>
 
 
