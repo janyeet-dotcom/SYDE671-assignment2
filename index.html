@@ -280,6 +280,50 @@ the puzzle pieces! Since the images were higher resolution, I needed to use a gr
   <figcaption>Hybrid image of Derek and Nutmeg at different distances, <b>&sigma;<sub>low</sub></b> = 10.0, <b>&sigma;<sub>high</sub></b> = 1.5</b></figcaption>
 </figure>
 
-<p> For these cases, I also had to align the eyes</p>
+<p> So the low-pass and high-pass filters, as well a the the summation can be visualized easily in the frequency domain. As you can see with the Marilyn and and Einstein images, the low-pass filter on Marilyn is shown by taking the central values
+  in k-space, shown by the shiny x-axis and y-axis central lines. The high-pass filter on Einstein is shown by taking the outer values in k-space, shown by the darkened x-axis and y-axis central lines. The summation of the two images is shown in 
+  the last image, which combines the centre of the Marilyn photo and the outside of the Einstein photo. Taking the log of k-space allows the frequencies to be visualized better, otherwise the low-pass would show as very thin and skinny.
+</p>
 
+<figure class="single">
+  <img src="Assignment_Images\hybrid-marilyn-einstein-fft.png" alt="Hybrid image of Marilyn and Einstein in frequency domain" height="900" class="center-image">
+  <figcaption>Hybrid image of Marilyn and Einstein in frequency domain</figcaption>
+</figure>
 
+<h4>Bells & Whistles</h4>
+
+<p>Now that we've got some good hybrid images in black and white, we can explore getting the colour back in these images. So I tried seeing whether the colour from the low-frequency image or the high-frequency
+  image works better! So I've tried a few combinations below with submarine and fish.
+</p>
+
+<figure class="single">
+  <img src="Assignment_Images\hybrid-submarine-fish.png" alt="Images of submarine and fish" height="900" class="center-image">
+  <figcaption>Images of submarine and fish</figcaption>
+</figure>
+
+<figure class="single">
+  <img src="Assignment_Images\hybrid-fish-submarine-colour.png" alt="Colour images of submarine and fish" height="900" class="center-image">
+  <figcaption>Colour images of submarine and fish</figcaption>
+</figure>
+
+<p>Looking at the different combinations, we can see that the colour from the low-frequency image tends to produce more visually appealing results,
+  and it matches that of the hybrid image of colour components from both the low-frequency and high-frequency images.
+</p>
+
+<h2>MultiResolution Blending and the Oraple Journey</h2>
+
+<h3>2.3 Gaussian and Laplacian Stacks</h3>
+
+<p>Another way to combine images would be to sort of splice them together, kind of how our phones take panorama photos. Panoramas are created when our phones
+  take successive images of the scene, then are stictched together. There might be cases where we might manually want to do this, as panoramas are low resolution,
+  so if you take several images of a scene using a fancy camera, then you can stitch them together to create a high-resolution panorama. However, if we just splice
+   the images together, there might be some harsh edges where the images meet. If we use two images that are obviously not the same object, and we're able to morph them
+   together and we succeed in morphing them together, then it should definitely work on the same object.
+</p>
+
+<p>So to accomplish this, we can use a technique called multi-resolution blending, which involves creating Gaussian and Laplacian pyramids of the images and then combining 
+  them at different scales. For simplicity, this can also be accomplished with Gaussian and Laplacian stacks, which are the same as pyramids, but without the downsampling.
+  Our starting materials are the two images that are being combined, and a mask. For simplicity, we'll use a mask where the left half of the product is of image A and the right
+  half is of image B. Then, we Gaussian filter, then Laplacian filter image A and B (1-Gaussian) at different <b>&sigma;</b> values, and then combine the Laplacian stacks of the
+   two images using the mask. The result is a blended image that combines the features of both images.
+</p>
