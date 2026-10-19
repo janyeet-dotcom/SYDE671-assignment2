@@ -314,16 +314,33 @@ the puzzle pieces! Since the images were higher resolution, I needed to use a gr
 
 <h3>2.3 Gaussian and Laplacian Stacks</h3>
 
-<p>Another way to combine images would be to sort of splice them together, kind of how our phones take panorama photos. Panoramas are created when our phones
-  take successive images of the scene, then are stictched together. There might be cases where we might manually want to do this, as panoramas are low resolution,
-  so if you take several images of a scene using a fancy camera, then you can stitch them together to create a high-resolution panorama. However, if we just splice
-   the images together, there might be some harsh edges where the images meet. If we use two images that are obviously not the same object, and we're able to morph them
-   together and we succeed in morphing them together, then it should definitely work on the same object.
+<p>Another way to combine images would be to overlap them together, kind of how our phones take panorama photos. Panoramas are created when our phones
+  take successive images of the scene, then are stitched together. There might be cases where we might want to do this manually, as panoramas are low resolution,
+  so if you take several images of a scene using a fancy camera, then you can make a high-resolution panorama. Both manual and phone panoramas can have issues with 
+  the seams between the images, so we can use multi-resolution blending to help with this.
 </p>
 
-<p>So to accomplish this, we can use a technique called multi-resolution blending, which involves creating Gaussian and Laplacian pyramids of the images and then combining 
-  them at different scales. For simplicity, this can also be accomplished with Gaussian and Laplacian stacks, which are the same as pyramids, but without the downsampling.
-  Our starting materials are the two images that are being combined, and a mask. For simplicity, we'll use a mask where the left half of the product is of image A and the right
+<p>A technique we can use is multi-resolution blending, which involves creating Gaussian and Laplacian pyramids of the images and then combining 
+  them at different scales. This can also be accomplished with Gaussian and Laplacian stacks, which are the same as pyramids, but without the downsampling.
+  Our starting materials are the two images that are being combined, and a mask. To start, we'll use a mask where the left half of the product is of image A and the right
   half is of image B. Then, we Gaussian filter, then Laplacian filter image A and B (1-Gaussian) at different <b>&sigma;</b> values, and then combine the Laplacian stacks of the
    two images using the mask. The result is a blended image that combines the features of both images.
 </p>
+
+<figure class="single">
+  <img src="Assignment_Images\part2_3_figure_3_42-oraple.png" alt="Laplacian stacks blending details" height="900" class="center-image">
+  <figcaption>Laplacian stacks blending details.</figcaption>
+</figure>
+
+<h3>2.4 Multi-resolution Blending</h3>
+
+<figure class="single">
+  <img src="Assignment_Images\part2_3_result-oraple.png" alt="Starting images of an apple and orange, the image mask, and the resulting blended image" height="900" class="center-image">
+  <figcaption>Multi-resolution blending of an apple and orange</figcaption>
+</figure>
+
+
+
+
+
+
