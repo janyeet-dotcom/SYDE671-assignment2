@@ -415,16 +415,6 @@ the puzzle pieces! Since the images were higher resolution, I needed to use a gr
   another, we can create an image that looks different depending on the viewing distance.</p>
 
 <figure class="single">
-  <img src="Assignment_Images/hybrid-cat-dog.png" alt="Images of a cat and dog" height="900" class="center-image">
-  <figcaption>Images of a cat and dog</figcaption>
-</figure>
-
-<figure class="single">
-  <img src="Assignment_Images/hybrid-cat-dog-zoom.png" alt="Hybrid image of a cat and dog at different distances" height="900" class="center-image">
-  <figcaption>Hybrid image of a cat and dog at different distances, &sigma;<sub>low</sub> = 6, &sigma;<sub>high</sub> = 3</figcaption>
-</figure>
-
-<figure class="single">
   <img src="Assignment_Images/hybrid-bird-plane.png" alt="Images of a bird and plane" height="900" class="center-image">
   <figcaption>Images of a bird and plane</figcaption>
 </figure>
@@ -479,45 +469,61 @@ def log_spectrum(g):                              # what is plotted in the frequ
   <figcaption>Hybrid image of Derek and Nutmeg at different distances, <b>&sigma;<sub>low</sub></b> = 10.0, <b>&sigma;<sub>high</sub></b> = 1.5</figcaption>
 </figure>
 
-<h4>Full process for one hybrid: Derek + Nutmeg</h4>
-
-<p>For my favourite result, here is the whole pipeline. First, the original photos with the two eye points I picked in each (red crosses), next to the aligned versions, this image is above. Then the
-   frequency analysis: the top row is the two aligned grayscale inputs, the low-passed Derek, the high-passed Nutmeg, and the hybrid; the bottom row is the log magnitude of the Fourier transform of each.
-   Low-passing removes everything except the centre of the spectrum, high-passing removes the centre and keeps the outer values, and the hybrid has both.
+<h4>Full process for one hybrid!</h4>
+ 
+<p>For my favourite result I used the dog (low frequencies) and the kitten (high frequencies). The dog's face is made of large soft shapes (the dark eyes, the flat muzzle, the floppy ears),
+   while the kitten has fine fur and whiskers, which is exactly the kind of detail that lives in the high frequencies. Here is the whole pipeline. The cat and dog are mostly aligned so I left them as is, but otherwise I'd 
+   first select the eyes similar to Derek and Nutmeg. Because these photos are small, I also made the aligned canvas the same size as the photos instead of the default portrait canvas, otherwise the empty border gets filled 
+   with mirrored copies of the image.
 </p>
-
+ 
 <figure class="single">
-  <img src="Assignment_Images\hybrid-derek-nutmeg-logfft.png" alt="Derek and Nutmeg: aligned images, filtered images, hybrid, and their log Fourier transforms" class="center-image">
+  <img src="Assignment_Images/hybrid-cat-dog.png" alt="Images of a cat and dog" height="900" class="center-image">
+  <figcaption>Images of a cat and dog</figcaption>
+</figure>
+ 
+<p>Next is the frequency analysis. The top row is the two aligned grayscale inputs, the low-passed dog, the high-passed cat (shown around mid-gray), and the hybrid; the bottom row is the log magnitude of the
+   Fourier transform of each. The low-passed spectrum is bright only near the centre, because the Gaussian removed everything away from the origin, while the high-passed spectrum is the opposite: the
+   centre is dark and the outer values remain. The hybrid's spectrum has both, which is why it can look like either animal. (The bright horizontal and vertical lines through the middle of every spectrum come from the image borders, where
+   the picture is cut off abruptly, and are not part of the content.)
+</p>
+ 
+<figure class="single">
+  <img src="Assignment_Images/hybrid-cat-dog-fft.png" alt="Dog and cat: aligned images, filtered images, hybrid, and their log Fourier transforms" class="center-image">
   <figcaption>Aligned inputs, filtered images, and hybrid (top) with their log Fourier magnitudes (bottom), &sigma;<sub>low</sub> = 7.0, &sigma;<sub>high</sub> = 3.5</figcaption>
 </figure>
+ 
+<p>Finally, the result at different viewing distances. Since I can't move you away from your screen, the same hybrid is shown at full size, then 1/2, 1/4, 1/8 and 1/16 of the size: up close it is the kitten
+   (the eyes, whiskers and fur), and as it shrinks the kitten's fine detail disappears and the dog takes over.
+</p>
+ 
+<figure class="single">
+  <img src="Assignment_Images/hybrid-cat-dog-zoom.png" alt="Hybrid image of a cat and dog at different distances" height="900" class="center-image">
+  <figcaption>Hybrid image of a cat and dog at different distances, &sigma;<sub>low</sub> = 7.0, &sigma;<sub>high</sub> = 3.5</figcaption>
+</figure>
 
+<p> The low-pass and high-pass filters, as well as the summation, can also be visualized easily in the frequency domain. The low-pass filter on the dog is shown by taking the central values
+  in k-space, shown by the shiny x-axis and y-axis central lines. The high-pass filter on the cat is shown by taking the outer values in k-space, shown by the darkened x-axis and y-axis central lines. The summation of the two images is shown in
+  the last image, which combines the centre of the Marilyn photo and the outside of the Einstein photo. Taking the log of k-space allows the frequencies to be visualized better, otherwise the low-pass would show as very thin and skinny.
+</p>
+ 
 <p><b>Choosing the cutoff frequencies.</b> A Gaussian with standard deviation &sigma; pixels has frequency response exp(&minus;2&pi;&sup2;&sigma;&sup2;f&sup2;), so I define its cutoff as f<sub>c</sub> = 1/(2&pi;&sigma;)
    cycles per pixel (where the gain has fallen to about 0.61). &sigma;<sub>low</sub> = 7 gives a low-pass cutoff of 0.023 cycles/pixel (features larger than about 44 pixels survive) and
    &sigma;<sub>high</sub> = 3.5 gives a high-pass cutoff of 0.045 cycles/pixel (features smaller than about 22 pixels are kept). I made the high-pass cutoff higher than the low-pass cutoff on purpose, which leaves a small
    gap of mid frequencies that neither image contributes much to (the dotted "sum of filters" curve dips to roughly half in the figure). Without the gap, the two images overlap in the same frequency band and fight each other,
-   so neither identity wins cleanly at any distance. The cutoffs themselves are best chosen by experimenting with the viewing distance, which is what I did with the two sigma pairs above.
+   so neither identity wins cleanly at any distance. The cutoffs themselves are best chosen by experimenting with the viewing distance, which is what I did with the two sigma pairs for Derek and Nutmeg above.
 </p>
+ 
 
 <figure class="single">
-  <img src="Assignment_Images/hybrid-cutoff-7.0-3.5.png" alt="Frequency response of the low-pass and high-pass filters with their cutoffs" class="center-image">
-  <figcaption>Gain of the low-pass (&sigma; = 7) and high-pass (&sigma; = 3.5) filters, with the cutoff frequencies marked</figcaption>
-</figure>
-
-<p> The low-pass and high-pass filters, as well as the summation, can also be visualized easily in the frequency domain with the Marilyn and Einstein images. The low-pass filter on Marilyn is shown by taking the central values
-  in k-space, shown by the shiny x-axis and y-axis central lines. The high-pass filter on Einstein is shown by taking the outer values in k-space, shown by the darkened x-axis and y-axis central lines. The summation of the two images is shown in
-  the last image, which combines the centre of the Marilyn photo and the outside of the Einstein photo. Taking the log of k-space allows the frequencies to be visualized better, otherwise the low-pass would show as very thin and skinny.
-</p>
-
-<figure class="single">
-  <img src="Assignment_Images/hybrid-marilyn-einstein-fft.png" alt="Hybrid image of Marilyn and Einstein in frequency domain" height="900" class="center-image">
-  <figcaption>Hybrid image of Marilyn and Einstein in frequency domain</figcaption>
+  <img src="Assignment_Images/hybrid-cat-dog-fft.png" alt="Hybrid image of cat and dog in frequency domain" height="900" class="center-image">
+  <figcaption>Hybrid image of cat and dog in frequency domain</figcaption>
 </figure>
 
 <h4>Bells &amp; Whistles</h4>
 
 <p>Now that we've got some good hybrid images in black and white, we can explore getting the colour back in these images. So I tried seeing whether the colour from the low-frequency image or the high-frequency
-  image works better! So I've tried a few combinations below with submarine and fish. In the figure with all four combinations the panels are, from left to right: gray + gray, colour low-frequency + gray high-frequency, gray low-frequency + colour high-frequency, and colour + colour: gray + gray, colour low-frequency + gray high-frequency,
-  gray low-frequency + colour high-frequency, and colour in both.
+  image works better! So I've tried a few combinations below with submarine and fish.
 </p>
 
 <figure class="single">
@@ -654,6 +660,13 @@ def grabcut(img_bgr, rect, iters=8):
    on page 226 of Szeliski fails for exactly this reason), and using one blurry mask at all levels makes the fine detail ghost across the seam.
    (4) <b>Number of levels and &sigma; scale with image size</b>: for a 375&times;307 image &sigma; starts at 2, and for the 900-pixel chicken at 3, since the same &sigma; is a much narrower transition in a bigger image.
    (5) <b>Mask shape</b>: GrabCut is useful when the seam should follow an object, but the mask only needs to be roughly correct, because the blurred mask hides small inaccuracies along the object's boundary.
+</p>
+
+<h2>What I Learned</h2>
+ 
+<p>The most important thing I learned from this project is that there is a lot that we can do with images related to frequency. We can sharpen images, create hybrid images, and blend images together. The most interesting part of this 
+  project was the hybrid images, where we can combine two images together to create a new image that looks different depending on the viewing distance. This is a very interesting concept that I had never thought about before, and it was 
+  fun to experiment with different images and see how they looked at different distances.
 </p>
 
 </body>
