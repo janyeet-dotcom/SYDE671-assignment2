@@ -6,6 +6,7 @@
 <title>SYDE671 Assignment 2</title>
 
 <style>
+html { scroll-behavior: smooth; }
 body { font-family: Arial, sans-serif; margin: 20px auto; padding: 0 20px; max-width: 1100px; line-height: 1.55; color: #222; }
 h1 { border-bottom: 2px solid #ddd; padding-bottom: 8px; text-align: center; }
 h2 { margin-top: 2.2em; border-bottom: 1px solid #ddd; padding-bottom: 4px; text-align: center; }
@@ -28,8 +29,8 @@ th { background: #f3f3f3; }
 pre { background: #f6f8fa; border: 1px solid #e1e4e8; border-radius: 4px; padding: 12px; overflow-x: auto; max-width: 850px; margin: 1em auto; font-size: 0.85em; line-height: 1.4; box-sizing: border-box; }
 code { font-family: Consolas, "Courier New", monospace; }
 p code { background: #f3f3f3; padding: 1px 4px; border-radius: 3px; font-size: 0.92em; }
-.todo { background: #fff3b0; padding: 0 3px; border-radius: 2px; }
-details.code-block{max-width:850px;margin:1em auto;border:1px solid #ddd;border-radius:6px;background:#fafafa;}details.code-block summary{cursor:pointer;padding:10px 14px;font-weight:600;user-select:none;}details.code-block[open] summary{border-bottom:1px solid #ddd;}details.code-block pre{margin:0;border:none;border-radius:0;}
+details.code-block{max-width:850px;margin:1em auto;border:1px solid #ddd;border-radius:6px;background:#fafafa;}details.code-block summary{cursor:pointer;padding:10px 14px;font-weight:600;user-select:none;}
+details.code-block summary:hover{background:#f3f3f3;}details.code-block[open] summary{border-bottom:1px solid #ddd;}details.code-block pre{margin:0;border:none;border-radius:0;}
 @media (max-width: 700px) { .image-grid { grid-template-columns: 1fr; } }
 </style>
 
@@ -61,7 +62,7 @@ details.code-block{max-width:850px;margin:1em auto;border:1px solid #ddd;border-
    the border for the derivative filters (I deal with that in Part 1.2).
 </p>
 
-<details class="code-block"><summary>Show code</summary><pre><code>
+<details class="code-block"><summary>Show convolution implementation</summary><pre><code>
 def pad_zeros(image, kshape):
     kh, kw = kshape
     return np.pad(image, ((kh // 2, kh - 1 - kh // 2), (kw // 2, kw - 1 - kw // 2)))  # zeros by default
@@ -107,7 +108,7 @@ def convolve2d_two_loops(image: np.ndarray, kernel: np.ndarray) -> np.ndarray:
    reports the largest absolute difference from <code>scipy.signal.convolve2d</code>:
 </p>
 
-<details class="code-block"><summary>Show code</summary><pre><code>
+<details class="code-block"><summary>Show convolution benchmarking code</summary><pre><code>
 BOX = np.ones((9, 9)) / 81.0              # 9x9 box (averaging) filter
 DX = np.array([[-1, 1]], dtype=float)     # finite difference in x
 DY = np.array([[-1], [1]], dtype=float)   # finite difference in y
@@ -159,7 +160,7 @@ for name, k in {"Box 9x9": BOX, "Dx": DX, "Dy": DY}.items():
     the gradient magnitude, which will tell us how strong edges are regardless of direction.
 </p>
 
-<details class="code-block"><summary>Show code</summary><pre><code>
+<details class="code-block"><summary>Show finite-difference implementation</summary><pre><code>
 DX = np.array([[1, 0, -1]], dtype=float)
 DY = np.array([[1], [0], [-1]], dtype=float)
 
@@ -207,7 +208,7 @@ edges = mag &gt; 0.3                       # binarize with a threshold
     I used &sigma; = 2 with a 13&times;13 kernel (about 6&sigma; wide, so the tails are negligible).
 </p>
 
-<details class="code-block"><summary>Show code</summary><pre><code>
+<details class="code-block"><summary>Show DoG implementation</summary><pre><code>
 def gaussian_2d(ksize, sigma):
     g = cv2.getGaussianKernel(ksize, sigma).ravel()   # 1D Gaussian
     return np.outer(g, g)                             # 2D Gaussian (sums to 1)
@@ -299,7 +300,7 @@ dog_x, dog_y = conv(img, DoG_x), conv(img, DoG_y)
    at the right of the figure below is the legend for the mapping (right-pointing gradient = red; left = cyan).
 </p>
 
-<details class="code-block"><summary>Show code</summary><pre><code>
+<details class="code-block"><summary>Show gradient-orientation implementation</summary><pre><code>
 def pseudo_angle(x, y):
     """Direction of the vector (x, y) as a number in [0, 1)."""
     l1 = np.abs(x) + np.abs(y)
@@ -331,7 +332,7 @@ rgb = orientation_rgb(dog_x, -dog_y, dog_mag)
   <b>sharp = I * ((1 + &alpha;)&delta; &minus; &alpha;G)</b>, the "unsharp mask filter". It is just a big positive spike at the centre with a negative Gaussian skirt around it.
 </p>
 
-<details class="code-block"><summary>Show code</summary><pre><code>
+<details class="code-block"><summary>Show unsharp masking implementation</summary><pre><code>
 def gaussian_kernel(sigma):
     ksize = 2 * int(np.ceil(3 * sigma)) + 1          # covers +/- 3 sigma
     g = cv2.getGaussianKernel(ksize, sigma)
@@ -429,7 +430,7 @@ the puzzle pieces! Since the images were higher resolution, I needed to use a gr
   aligned (I pick the two eyes in each image, then rotate, scale and translate each image so those two points land on the same spot), since misaligned features break the illusion.
 </p>
 
-<details class="code-block"><summary>Show code</summary><pre><code>
+<details class="code-block"><summary>Show hybrid-image implementation</summary><pre><code>
 def align(img, pts):
     """Rotate/scale/translate so the two points land on fixed horizontal positions."""
     cx, cy = REF_CENTER
@@ -490,36 +491,45 @@ def log_spectrum(g):                              # what is plotted in the frequ
  
 <figure class="single">
   <img src="Assignment_Images/hybrid-cat-dog-fft.png" alt="Dog and cat: aligned images, filtered images, hybrid, and their log Fourier transforms" class="center-image">
-  <figcaption>Aligned inputs, filtered images, and hybrid (top) with their log Fourier magnitudes (bottom), &sigma;<sub>low</sub> = 7.0, &sigma;<sub>high</sub> = 3.5</figcaption>
+  <figcaption>Aligned inputs, filtered images, and hybrid (top) with their log Fourier magnitudes (bottom), &sigma;<sub>low</sub> = 8.0, &sigma;<sub>high</sub> = 1.8</figcaption>
 </figure>
  
 <p>Finally, the result at different viewing distances. Since I can't move you away from your screen, the same hybrid is shown at full size, then 1/2, 1/4, 1/8 and 1/16 of the size: up close it is the kitten
-   (the eyes, whiskers and fur), and as it shrinks the kitten's fine detail disappears and the dog takes over.
+   (the eyes, whiskers and fur), and as it shrinks the kitten's fine detail disappears and the dog takes over (by half size the dog already reads clearly).
 </p>
  
 <figure class="single">
   <img src="Assignment_Images/hybrid-cat-dog-zoom.png" alt="Hybrid image of a cat and dog at different distances" height="900" class="center-image">
-  <figcaption>Hybrid image of a cat and dog at different distances, &sigma;<sub>low</sub> = 7.0, &sigma;<sub>high</sub> = 3.5</figcaption>
+  <figcaption>Hybrid image of a cat and dog at different distances, &sigma;<sub>low</sub> = 8.0, &sigma;<sub>high</sub> = 1.8</figcaption>
 </figure>
-
-<p> The low-pass and high-pass filters, as well as the summation, can also be visualized easily in the frequency domain. The low-pass filter on the dog is shown by taking the central values
-  in k-space, shown by the shiny x-axis and y-axis central lines. The high-pass filter on the cat is shown by taking the outer values in k-space, shown by the darkened x-axis and y-axis central lines. The summation of the two images is shown in
-  the last image, which combines the centre of the Marilyn photo and the outside of the Einstein photo. Taking the log of k-space allows the frequencies to be visualized better, otherwise the low-pass would show as very thin and skinny.
+ 
+<p> The low-pass and high-pass filters, as well as the summation, can also be seen in the frequency domain (bottom row of the frequency-analysis figure above). The low-passed dog keeps only the central values
+  of k-space (low frequencies), so its spectrum is bright near the centre and black further out. The high-passed cat is the opposite: its centre is dark and the outer values (high frequencies) remain.
+  The hybrid on the right has both: the centre of the dog's spectrum plus the outside of the cat's. Taking the log of the magnitude allows the frequencies to be visualized better; otherwise the low-pass
+  would show as a very thin bright dot.
 </p>
  
 <p><b>Choosing the cutoff frequencies.</b> A Gaussian with standard deviation &sigma; pixels has frequency response exp(&minus;2&pi;&sup2;&sigma;&sup2;f&sup2;), so I define its cutoff as f<sub>c</sub> = 1/(2&pi;&sigma;)
-   cycles per pixel (where the gain has fallen to about 0.61). &sigma;<sub>low</sub> = 7 gives a low-pass cutoff of 0.023 cycles/pixel (features larger than about 44 pixels survive) and
-   &sigma;<sub>high</sub> = 3.5 gives a high-pass cutoff of 0.045 cycles/pixel (features smaller than about 22 pixels are kept). I made the high-pass cutoff higher than the low-pass cutoff on purpose, which leaves a small
-   gap of mid frequencies that neither image contributes much to (the dotted "sum of filters" curve dips to roughly half in the figure). Without the gap, the two images overlap in the same frequency band and fight each other,
-   so neither identity wins cleanly at any distance. The cutoffs themselves are best chosen by experimenting with the viewing distance, which is what I did with the two sigma pairs for Derek and Nutmeg above.
+   cycles per pixel (where the gain has fallen to e<sup>&minus;1/2</sup> &asymp; 0.61). For the dog and cat, &sigma;<sub>low</sub> = 8 gives a low-pass cutoff of 0.020 cycles/pixel (features larger than about 50 pixels survive) and
+   &sigma;<sub>high</sub> = 1.8 gives a high-pass cutoff of 0.088 cycles/pixel (features smaller than about 11 pixels are kept). The high-pass cutoff is more than four times the low-pass cutoff, which leaves a gap of mid
+   frequencies that neither image contributes much to: the dotted "sum of filters" curve in the plot below dips to about 0.19 near 0.05 cycles/pixel. This choice means the dog supplies only the coarse shapes, while the cat supplies only
+   its finest detail (whiskers, fur and the outline of the eyes), so the two identities hardly overlap in the same frequency band. The cutoffs themselves were chosen by experimenting with the viewing distance,
+   as with the two &sigma; pairs for Derek and Nutmeg above. The same formula gives the cutoffs for the Derek and Nutmeg pairs:
 </p>
  
-
+<table>
+  <tr><th>Hybrid</th><th>&sigma;<sub>low</sub></th><th>&sigma;<sub>high</sub></th><th>Low-pass cutoff (cycles/pixel)</th><th>High-pass cutoff (cycles/pixel)</th></tr>
+  <tr><td>Dog + cat</td><td>8.0</td><td>1.8</td><td>0.020</td><td>0.088</td></tr>
+  <tr><td>Derek + Nutmeg</td><td>7.0</td><td>3.5</td><td>0.023</td><td>0.045</td></tr>
+  <tr><td>Derek + Nutmeg</td><td>10.0</td><td>1.5</td><td>0.016</td><td>0.106</td></tr>
+</table>
+ 
+ 
 <figure class="single">
-  <img src="Assignment_Images/hybrid-cat-dog-fft.png" alt="Hybrid image of cat and dog in frequency domain" height="900" class="center-image">
-  <figcaption>Hybrid image of cat and dog in frequency domain</figcaption>
+  <img src="Assignment_Images/hybrid-cutoff-8.0-1.8.png" alt="Low-pass and high-pass filter gains versus spatial frequency for sigma low 8 and sigma high 1.8" class="center-image">
+  <figcaption>Frequency response of the low-pass (&sigma; = 8) and high-pass (&sigma; = 1.8) filters, with their cutoffs (dashed) at 0.020 and 0.088 cycles/pixel and the sum of the two filters (dotted).</figcaption>
 </figure>
-
+ 
 <h4>Bells &amp; Whistles</h4>
 
 <p>Now that we've got some good hybrid images in black and white, we can explore getting the colour back in these images. So I tried seeing whether the colour from the low-frequency image or the high-frequency
@@ -567,7 +577,7 @@ def log_spectrum(g):                              # what is plotted in the frequ
   Because the mask gets blurrier at the coarse levels, the transition between the two images is soft for low frequencies and sharp for fine detail, which is what hides the seam.
 </p>
 
-<details class="code-block"><summary>Show code</summary><pre><code>
+<details class="code-block"><summary>Show Gaussian/Laplacian stack implementation</summary><pre><code>
 def gaussian_stack(img, levels, sigma):
     """[G_0 .. G_levels]: full-size images, blurrier every level (no downsampling)."""
     return [img] + [blur(img, sigma * 2 ** (l - 1)) for l in range(1, levels + 1)]
@@ -618,7 +628,7 @@ blended = np.clip(sum(wsum), 0, 1)
    filled with fish skin, floating in the submarine's own water. Both photos are underwater scenes in similar colours, so the low-frequency bands blend well.
 </p>
 
-<details class="code-block"><summary>Show code</summary><pre><code>
+<details class="code-block"><summary>Show GrabCut mask generation code</summary><pre><code>
 def grabcut(img_bgr, rect, iters=8):
     h, w = img_bgr.shape[:2]
     x, y, rw, rh = rect
