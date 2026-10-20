@@ -29,6 +29,7 @@ pre { background: #f6f8fa; border: 1px solid #e1e4e8; border-radius: 4px; paddin
 code { font-family: Consolas, "Courier New", monospace; }
 p code { background: #f3f3f3; padding: 1px 4px; border-radius: 3px; font-size: 0.92em; }
 .todo { background: #fff3b0; padding: 0 3px; border-radius: 2px; }
+details.code-block{max-width:850px;margin:1em auto;border:1px solid #ddd;border-radius:6px;background:#fafafa;}details.code-block summary{cursor:pointer;padding:10px 14px;font-weight:600;user-select:none;}details.code-block[open] summary{border-bottom:1px solid #ddd;}details.code-block pre{margin:0;border:none;border-radius:0;}
 @media (max-width: 700px) { .image-grid { grid-template-columns: 1fr; } }
 </style>
 
@@ -60,8 +61,7 @@ p code { background: #f3f3f3; padding: 1px 4px; border-radius: 3px; font-size: 0
    the border for the derivative filters (I deal with that in Part 1.2).
 </p>
 
-<pre>
-<code>
+<details class="code-block"><summary>Show code</summary><pre><code>
 def pad_zeros(image, kshape):
     kh, kw = kshape
     return np.pad(image, ((kh // 2, kh - 1 - kh // 2), (kw // 2, kw - 1 - kw // 2)))  # zeros by default
@@ -101,15 +101,13 @@ def convolve2d_two_loops(image: np.ndarray, kernel: np.ndarray) -> np.ndarray:
         for c in range(w):
             output[r, c] = np.sum(padded[r:r + kh, c:c + kw] * flipped)
     return output
-</code>
-</pre>
+</code></pre></details>
 
 <p>The filters used are a 9&times;9 box filter and the finite difference operators. The comparison against SciPy times each implementation and
    reports the largest absolute difference from <code>scipy.signal.convolve2d</code>:
 </p>
 
-<pre>
-<code>
+<details class="code-block"><summary>Show code</summary><pre><code>
 BOX = np.ones((9, 9)) / 81.0              # 9x9 box (averaging) filter
 DX = np.array([[-1, 1]], dtype=float)     # finite difference in x
 DY = np.array([[-1], [1]], dtype=float)   # finite difference in y
@@ -121,10 +119,10 @@ for name, k in {"Box 9x9": BOX, "Dx": DX, "Dy": DY}.items():
     out2, t2 = timed(convolve2d_two_loops, test, k)
     ref, ts = timed(convolve2d, test, k, "same", "fill", 0)      # SciPy, zero padded
     print(name, t4, t2, ts, np.abs(out4 - ref).max(), np.abs(out2 - ref).max())
-</code>
-</pre>
+</code></pre></details>
 
-<p>Runtime (and agreement with SciPy) on a 64&times;64 crop of the image, since the four-loop version is too slow in pure Python to run on the whole picture:
+<p>Runtime (and agreement with SciPy) on a 64&times;64 crop of the image, since the four-loop version is too slow in pure Python to 
+  run on the whole picture:
 </p>
 
 <table>
@@ -134,9 +132,9 @@ for name, k in {"Box 9x9": BOX, "Dx": DX, "Dy": DY}.items():
   <tr><td>D<sub>y</sub></td><td>0.006</td><td>0.034</td><td>0.0002</td><td>0</td><td>0</td></tr>
 </table>
 
-<p>All three methods produce the same results, error beingaround 1e-13 or exactly zero.
+<p>All three methods produce the same results, error being around 1e-13 or exactly zero.
    For the 9&times;9 box filter, the two-loop version is roughly an order of magnitude faster than four loops because NumPy does the 81 multiplications in one
-   vectorized call, and SciPy (compiled C) is faster again. For the tiny 1&times;2 and 2&times;1 difference filters the kernel loops are
+   vectorized call, and SciPy is faster again. For the tiny 1&times;2 and 2&times;1 difference filters the kernel loops are
    so short that the four-loop version is actually quicker: calling <code>np.sum</code> on a two-element window costs more than just looping.
    The vectorization only pays off when the kernel has many entries.
 </p>
@@ -152,9 +150,6 @@ for name, k in {"Box 9x9": BOX, "Dx": DX, "Dy": DY}.items():
   </figure>
 </div>
 
-<p>Here is the grayscale original along with the box-blurred image and the results of the finite difference operators D<sub>x</sub> and D<sub>y</sub> (and their gradient magnitude)
-   on the same photo, all computed with my two-loop convolution.
-</p>
 
 <h3>1.2 Finite Difference Operators</h3>
 
@@ -164,8 +159,7 @@ for name, k in {"Box 9x9": BOX, "Dx": DX, "Dy": DY}.items():
     the gradient magnitude, which will tell us how strong edges are regardless of direction.
 </p>
 
-<pre>
-<code>
+<details class="code-block"><summary>Show code</summary><pre><code>
 DX = np.array([[1, 0, -1]], dtype=float)
 DY = np.array([[1], [0], [-1]], dtype=float)
 
@@ -177,8 +171,7 @@ mag = np.hypot(ix, iy)                 # gradient magnitude, sqrt(Ix^2 + Iy^2)
 mag[[0, -1], :] = 0
 mag[:, [0, -1]] = 0
 edges = mag &gt; 0.3                       # binarize with a threshold
-</code>
-</pre>
+</code></pre></details>
 
 <p> We can have a python script calculate these gradients, then threshold them so that a magnitude of a certain strength can be classified as an edge.
     This threshold is going to be image dependent: a threshold too low will hold noise, while too high will delete the true edges. Using this cameraman
@@ -198,24 +191,23 @@ edges = mag &gt; 0.3                       # binarize with a threshold
   </figure>
 </div>
 
-<p>0.3 is what i selected to be the "best" threshold.This is a trade-off, and I chose to lean toward removing noise. At the lowest threshold (0.15) the grass in the foreground turns into a speckle of false edges, and the horizon clutter is noisy too.
-   At 0.3 the strong edges (the coat, head, camera and tripod legs) are clean and continuous, and the grass speckle is gone. The price is that faint, low-contrast edges,
+<p>0.3 is what I selected to be the "best" threshold. This is a trade-off, and I chose to lean toward removing noise. At the lowest threshold (0.15) the grass in the foreground turns into a speckle of false edges, and the horizon clutter is noisy.
+   At 0.3, the strong edges (the coat, head, camera and tripod legs) are clean and continuous, and the grass speckle is gone. The price is that faint, low-contrast edges,
    such as the distant buildings and the horizon line, mostly drop out. Raising the threshold further (0.4&ndash;0.5) starts to
    break up even the strong edges, such as the tripod legs, so 0.3 was the best compromise. The border pixels are also blanked, since zero padding produces a bright artificial edge around the image.
 </p>
 
 <h3>1.3 Derivative of Gaussian (DoG) Filter</h3>
 
-<p> If you squint a little at the 0.3 threshold image, you might have noticed that there is still some noise that is captured in the magnitude gradient thresholding.
-    A way to tackle this problem is to smooth the image before calculating the gradients. A common way to do this is to use a Gaussian filter, which will blur the image.
+<p> If we look closely at the 0.3-threshold image, you might have noticed that there is still some noise that is captured in the magnitude gradient thresholding.
+    A way to tackle this problem is to smooth the image before calculating the gradients. A common way to do this is to use a Gaussian filter.
 </p>
 
 <p> The Gaussian filter is built with <code>cv2.getGaussianKernel</code> to make a 1D Gaussian, then taking an outer product of it with itself to get the 2D kernel.
-    I used <b>&sigma; = 2</span></b> with a 13&times;13</span> kernel (about 6&sigma; wide, so the tails are negligible).
+    I used &sigma; = 2 with a 13&times;13 kernel (about 6&sigma; wide, so the tails are negligible).
 </p>
 
-<pre>
-<code>
+<details class="code-block"><summary>Show code</summary><pre><code>
 def gaussian_2d(ksize, sigma):
     g = cv2.getGaussianKernel(ksize, sigma).ravel()   # 1D Gaussian
     return np.outer(g, g)                             # 2D Gaussian (sums to 1)
@@ -230,8 +222,7 @@ bl_x, bl_y = conv(blurred, DX), conv(blurred, DY)
 DoG_x = convolve2d(G, DX, mode="full")
 DoG_y = convolve2d(G, DY, mode="full")
 dog_x, dog_y = conv(img, DoG_x), conv(img, DoG_y)
-</code>
-</pre>
+</code></pre></details>
 
 <p> In this case, we used a Gaussian filter compared to the box filter from Part 1.1. It's kind of hard to compare a photo of me to the cameraman, so I've displayed the
     original image, the box filter, and the Gaussian filter below. We can see that the box filter provides a more uniform blur while the Gaussian does a better job at preserving
@@ -299,7 +290,7 @@ dog_x, dog_y = conv(img, DoG_x), conv(img, DoG_y)
   <figcaption>HSV gradient visualization</figcaption>
 </figure>
 
-<p>To do with without using anything fancy, such as using a built-in angle function, we use the "diamond angle", which only needs arithmetic vs needing <code>arctan2</code>. 
+<p>To do this without using anything fancy, such as using a built-in angle function, we use the "diamond angle", which only needs arithmetic vs needing <code>arctan2</code>. 
   With <i>p</i> = I<sub>x</sub> / (|I<sub>x</sub>| + |I<sub>y</sub>|), which lies in [&minus;1, 1] and increases monotonically with the true angle,
    the hue is (1 &minus; <i>p</i>)/4 when I<sub>y</sub> &ge; 0 (angles 0&deg;&ndash;180&deg;, hue 0 to 0.5) and (3 + <i>p</i>)/4 when I<sub>y</sub> &lt; 0 (angles 180&deg;&ndash;360&deg;, hue 0.5 to 1).
    It lands on the right values at 0, 45, 90, ... degrees and is off by only a few degrees in between, which doesn't matter for colouring. Saturation is 1 and value is the gradient magnitude
@@ -308,8 +299,7 @@ dog_x, dog_y = conv(img, DoG_x), conv(img, DoG_y)
    at the right of the figure below is the legend for the mapping (right-pointing gradient = red; left = cyan).
 </p>
 
-<pre>
-<code>
+<details class="code-block"><summary>Show code</summary><pre><code>
 def pseudo_angle(x, y):
     """Direction of the vector (x, y) as a number in [0, 1)."""
     l1 = np.abs(x) + np.abs(y)
@@ -322,8 +312,7 @@ def orientation_rgb(ix, iy, mag):
     return hsv_to_rgb(np.dstack([hue, np.ones_like(hue), value]))
 
 rgb = orientation_rgb(dog_x, -dog_y, dog_mag)      
-</code>
-</pre>
+</code></pre></details>
 
 <h2>Part Two: Fun with Frequencies</h2>
 
@@ -342,8 +331,7 @@ rgb = orientation_rgb(dog_x, -dog_y, dog_mag)
   <b>sharp = I * ((1 + &alpha;)&delta; &minus; &alpha;G)</b>, the "unsharp mask filter". It is just a big positive spike at the centre with a negative Gaussian skirt around it.
 </p>
 
-<pre>
-<code>
+<details class="code-block"><summary>Show code</summary><pre><code>
 def gaussian_kernel(sigma):
     ksize = 2 * int(np.ceil(3 * sigma)) + 1          # covers +/- 3 sigma
     g = cv2.getGaussianKernel(ksize, sigma)
@@ -359,8 +347,7 @@ def unsharp_kernel(sigma, alpha):
 blurred = convolve(img, gaussian_kernel(sigma))            # low frequencies
 detail  = img - blurred                                    # high frequencies
 sharp   = convolve(img, unsharp_kernel(sigma, alpha))      # single convolution = img + alpha * detail
-</code>
-</pre>
+</code></pre></details>
 
 <figure class="single">
   <img src="Assignment_Images/part2_1_alphas_sigma2.png" alt="Alpha values comparison, sigma = 2.0" height="900" class="center-image">
@@ -400,7 +387,7 @@ the puzzle pieces! Since the images were higher resolution, I needed to use a gr
   <figcaption>Gaussian blur and unsharp masking with a puzzle</figcaption>
 </figure>
 
-<p>Now comes the moment of truth, trying to sharpen a blurred image! To see how much the unsharp mask can really recover, I started from sharp images (the Taj Mahal and the chicken), blurred them
+<p>Now comes the moment of truth: evaluating whether a blurred image can be recovered through sharpening. To see how much the unsharp mask can really recover, I started from sharp images (the Taj Mahal and the chicken), blurred them
    with the Gaussian, and then applied the unsharp mask (&alpha; = 1.5) to the blurred version. In each figure the panels are the original sharp image, the blurred image, and the blurred-then-sharpened image.
 </p>
 
@@ -452,8 +439,7 @@ the puzzle pieces! Since the images were higher resolution, I needed to use a gr
   aligned (I pick the two eyes in each image, then rotate, scale and translate each image so those two points land on the same spot), since misaligned features break the illusion.
 </p>
 
-<pre>
-<code>
+<details class="code-block"><summary>Show code</summary><pre><code>
 def align(img, pts):
     """Rotate/scale/translate so the two points land on fixed horizontal positions."""
     cx, cy = REF_CENTER
@@ -469,8 +455,7 @@ def hybrid(low_img, high_img, s_low, s_high):
 
 def log_spectrum(g):                              # what is plotted in the frequency figures
     return np.log(np.abs(np.fft.fftshift(np.fft.fft2(g))) + 1e-8)
-</code>
-</pre>
+</code></pre></details>
 
 <p> In terms of the Gaussian filters
   we will be using for the low-pass and high-pass filtering, we will have to make some choices in <b>&sigma;</b>. For Derek and Nutmeg, a <b>&sigma;<sub>low</sub></b> (the <b>&sigma;</b>
@@ -531,7 +516,7 @@ def log_spectrum(g):                              # what is plotted in the frequ
 <h4>Bells &amp; Whistles</h4>
 
 <p>Now that we've got some good hybrid images in black and white, we can explore getting the colour back in these images. So I tried seeing whether the colour from the low-frequency image or the high-frequency
-  image works better! So I've tried a few combinations below with submarine and fish. In the figure with all four combinations the panels are, <span class="todo">from left to right (please check against your figure)</span>: gray + gray, colour low-frequency + gray high-frequency,
+  image works better! So I've tried a few combinations below with submarine and fish. In the figure with all four combinations the panels are, from left to right: gray + gray, colour low-frequency + gray high-frequency, gray low-frequency + colour high-frequency, and colour + colour: gray + gray, colour low-frequency + gray high-frequency,
   gray low-frequency + colour high-frequency, and colour in both.
 </p>
 
@@ -555,7 +540,7 @@ def log_spectrum(g):                              # what is plotted in the frequ
 
 <h3>2.3 Gaussian and Laplacian Stacks</h3>
 
-<p>Another way to combine images would be to overlap them together, kind of how our phones take panorama photos. Panoramas are created when our phones
+<p>Another way to combine images is to blend or stitch them together, kind of how our phones take panorama photos. Panoramas are created when our phones
   take successive images of the scene, then are stitched together. There might be cases where we might want to do this manually, as panoramas are low resolution,
   so if you take several images of a scene using a fancy camera, then you can make a high-resolution panorama. Both manual and phone panoramas can have issues with
   the seams between the images, so we can use multi-resolution blending to help with this.
@@ -570,14 +555,13 @@ def log_spectrum(g):                              # what is plotted in the frequ
 <p><b>How the stacks are built.</b> The Gaussian stack starts with the original image as level 0 and then blurs it with a Gaussian whose &sigma; doubles at each level (I used 5 levels with
   &sigma; = 2, 4, 8, 16, 32 pixels), mimicking the blur a downsampled pyramid would have. The Laplacian stack is the difference between neighbouring Gaussian levels,
   <b>L<sub>l</sub> = G<sub>l</sub> &minus; G<sub>l+1</sub></b>, so each level holds one band of frequencies (the first level the finest detail, the later ones coarser). The last entry is just the final Gaussian level,
-  the low-frequency residual, so that adding all the Laplacian levels back together gives the original image exactly (I check this: the error is about 1e-7). Then we Gaussian filter, then Laplacian filter image A and B at these different
+  the low-frequency residual, so that adding all the Laplacian levels back together gives the original image exactly (I check this: the error is about 1e-7). We then construct Gaussian and Laplacian stacks for images A and B at these different
   <b>&sigma;</b> values, and also build a <b>Gaussian stack of the mask</b>. The blend is formed level by level,
   <b>blend = &sum;<sub>l</sub> L<sub>l</sub>(A) &middot; G<sub>l</sub>(mask) + L<sub>l</sub>(B) &middot; (1 &minus; G<sub>l</sub>(mask))</b>.
   Because the mask gets blurrier at the coarse levels, the transition between the two images is soft for low frequencies and sharp for fine detail, which is what hides the seam.
 </p>
 
-<pre>
-<code>
+<details class="code-block"><summary>Show code</summary><pre><code>
 def gaussian_stack(img, levels, sigma):
     """[G_0 .. G_levels]: full-size images, blurrier every level (no downsampling)."""
     return [img] + [blur(img, sigma * 2 ** (l - 1)) for l in range(1, levels + 1)]
@@ -596,8 +580,7 @@ ga, gb, gm = (gaussian_stack(x, 5, 2.0) for x in (a, b, mask3))   # stacks of A,
 la, lb = laplacian_stack(ga), laplacian_stack(gb)
 wa, wb, wsum = blend_stacks(la, lb, gm)
 blended = np.clip(sum(wsum), 0, 1)
-</code>
-</pre>
+</code></pre></details>
 
 <figure class="single">
   <img src="Assignment_Images/part2_3_stacks-oraple.png" alt="Gaussian and Laplacian stacks of the apple, the orange, and the mask" class="center-image">
@@ -629,8 +612,7 @@ blended = np.clip(sum(wsum), 0, 1)
    filled with fish skin, floating in the submarine's own water. Both photos are underwater scenes in similar colours, so the low-frequency bands blend well.
 </p>
 
-<pre>
-<code>
+<details class="code-block"><summary>Show code</summary><pre><code>
 def grabcut(img_bgr, rect, iters=8):
     h, w = img_bgr.shape[:2]
     x, y, rw, rh = rect
@@ -645,8 +627,7 @@ def grabcut(img_bgr, rect, iters=8):
 
 # python make_mask.py grabcut submarine.jpg mask_sub.png --rect 0.08 0.25 0.85 0.5 --invert
 # python simple_2_3_stacks.py submarine.jpg fish.jpg --name fishmarine --mask mask_sub.png
-</code>
-</pre>
+</code></pre></details>
 
 <figure class="single">
   <img src="Assignment_Images/part2_3_result_fishmarine.png" alt="Submarine photo, fish photo, the submarine-shaped mask, and the blended result" class="center-image">
